@@ -17,7 +17,7 @@ var bookings []string
 func main () {
 	fmt.Printf("Bienvenue sur notre application de réservation %v\n",conferenceName)
 	fmt.Println("Obtenez vos jetons pour assister à l'événement")
-	for remainingTokens > 0 {
+	for {
 		var firstName string
 		var lastName string
 		var tokensToDeal uint
@@ -32,9 +32,9 @@ func main () {
 		fmt.Printf("Combien serez-vous à participer ? (%v jetons disponibles)\n  ", remainingTokens)
 		fmt.Scan(&tokensToDeal)
 		if tokensToDeal > remainingTokens {
-			fmt.Println("Le nombre de jetons demandé est trop important. Désolé.")
+			fmt.Println("Le nombre de jetons demandé est trop important. Nous espérons vous voir l'an prochain.")
 			fmt.Println("----------")
-			break
+			continue
 		}
 		fmt.Printf("Pour finir, quelle est votre adresse de contact?\n  ")
 		fmt.Scan(&email)
@@ -46,17 +46,14 @@ func main () {
 		bookings = append(bookings, fullName)
 		fmt.Println("----------")
 	
+		firstNames := []string{}
+		for _, booking := range bookings {
+			names := strings.Fields(booking)
+			firstNames = append(firstNames, names[0])
+		}
+		fmt.Printf("Participants: %v\n", firstNames)
 		if remainingTokens == 0  {
 			fmt.Println("Jetons épuisés. Nous espérons vous voir à la prochaine conférence")
 		}
 	} 
-
-	firstNames := []string{}
-	for _, booking := range bookings {
-		names := strings.Fields(booking)
-		firstNames = append(firstNames, names[0])
-	}
-
-	fmt.Printf("Participants: %v\n", firstNames)
-
 }

@@ -1,6 +1,0 @@
-package addtoken
-
-func GetTickets() {
-	
-}
-
