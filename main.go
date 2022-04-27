@@ -1,62 +1,49 @@
 package main
 
 import (
+	"booking-app/helper"
 	"fmt"
-	"strings"
+	"strconv"
+	// "strings"
 	// "bufio"
 )
 
 const conferenceName string = "Go Conference"
-var conferenceTokens uint = 50
-var remainingTokens = conferenceTokens
-// var userTokens
-var bookings []string
-// firstNames := []string{}
-// var addBooking = true
-// var answer = ""
+const conferenceTokens uint = 50
+var RemainingTokens = conferenceTokens
+var bookings = make([]map[string]string, 0)
+
+type UserData struct {
+	firstName string
+	lastName string
+	email string
+	numberOfTokens uint
+	// isUserOpted bool
+}
 
 func main () {
-	greetUsers(conferenceName, conferenceTokens)
 
-	for remainingTokens > 0 && len(bookings) < 50 {
-		var firstName string
-		var lastName string
-		var tokensToDeal uint
-		var email string
+	greetUsers()
 
-		fmt.Println("==========")
+	for {
+		firstName, lastName, email, tokensToDeal := getUserInput()
 
-		fmt.Print("Entrez votre prénom:\n  ")
-		fmt.Scan(&firstName)
-		fmt.Print("Entrez votre nom de famille:\n  ")
-		fmt.Scan(&lastName)
-		fmt.Printf("Quelle est votre adresse de contact?\n  ")
-		fmt.Scan(&email)
-		fmt.Printf("Enfin, combien serez-vous à participer ? (%v jetons disponibles)\n  ", remainingTokens)
-		fmt.Scan(&tokensToDeal)
-		
-		isValidName := len(firstName) >= 2 && len(lastName) >= 2
-		isValidEmail := strings.Contains(email, "@")
-		isValidTokenNumber := tokensToDeal > 0 && tokensToDeal <= remainingTokens
-		
-
+		isValidName, isValidEmail, isValidTokenNumber := helper.ValidateUserInput( firstName, lastName, email, tokensToDeal, RemainingTokens) 
 		if isValidEmail && isValidName && isValidTokenNumber {
-			remainingTokens = remainingTokens - tokensToDeal
-			var fullName = firstName + " " + lastName
-			bookings = append(bookings, fullName)
+			bookToken( firstName , lastName, email, tokensToDeal)
 
-		fmt.Printf("Merci, %v. Vous serez notifié sous peu par courriel à l'adresse %v. Passez une excellente journée.\n", firstName, email)
+			fmt.Printf("Merci, %v. Vous serez notifié sous peu par courriel à l'adresse %v. Passez une excellente journée.\n", firstName, email)
 			fmt.Println("----------")
 		
-			firstNames := printFirstNames(bookings) 
+			firstNames := printFirstNames() 
 			fmt.Printf("Participants: %v\n", firstNames)
 
-			if remainingTokens == 0 {
+			if RemainingTokens == 0 {
 				fmt.Println("Jetons épuisés. Nous espérons vous voir lors de la prochaine conférence.")
 				break
 			}
-		} else {
-			fmt.Println("/!\\")
+			} else {
+				fmt.Println("/!\\")
 			if !isValidName {
 				fmt.Println("Attention: votre nom ou prénom doit contenir au minimum deux caractères")
 				// continue
@@ -74,20 +61,66 @@ func main () {
 			// continue
 		}
 	} 
+
+
+	fmt.Printf("Participants: %v\n", bookings)
 }
 
-func greetUsers(confName string, tokens uint) {
-	fmt.Printf("Bienvenue sur notre application de réservation %v.\n",confName)
-	fmt.Printf("Il y a actuellement %v jetons disponibles.\n", tokens)
+func greetUsers() {
+	fmt.Printf("Bienvenue sur notre application de réservation %v.\n",conferenceName)
+	fmt.Printf("Il y a actuellement %v jetons disponibles.\n", conferenceTokens)
 	fmt.Println("Obtenez vos jetons pour assister à la représentation.")
 }
 
-func printFirstNames(obj []string) []string {
+func printFirstNames() []string {
 		firstNames := []string{}
-			for _, booking := range obj {
-				names := strings.Fields(booking)
-				firstNames = append(firstNames, names[0])
+			for _, booking := range bookings {
+				// names := strings.Fields(booking)
+				firstNames = append(firstNames, booking["firstName"])
 			}
 			return firstNames
 			
+}
+
+
+
+func getUserInput() (string, string, string, uint) {
+	var firstName string
+		var lastName string
+		var email string
+		var tokensToDeal uint
+
+		fmt.Println("==========")
+		// getTextInput("entrez votre prénom", firstName)
+		fmt.Print("Entrez votre prénom: ")
+		fmt.Scan(&firstName)
+		fmt.Print("Entrez votre nom de famille:  ")
+		fmt.Scan(&lastName)
+		fmt.Printf("Quelle est votre adresse de contact?  ")
+		fmt.Scan(&email)
+		fmt.Printf("Enfin, combien serez-vous à participer ? (%v jetons disponibles)  ", RemainingTokens)
+		fmt.Scan(&tokensToDeal)
+
+		return firstName, lastName, email, tokensToDeal
+}
+// func getTextInput(msg , input string) {
+// 	fmt.Println(msg)
+// 		fmt.Scan(&input)
+
+// }
+
+func bookToken(firstName string, lastName string, email string, tokensToDeal uint) {
+	RemainingTokens = RemainingTokens - tokensToDeal
+	// var mySlice [string]
+	// var myMap = map[string]string
+	var userData = make(map[string]string)
+	userData["firstName"]=firstName
+	userData["lastName"]=lastName
+	userData["email"]=email
+	userData["firstName"]=firstName
+	userData["tokensToDeal"]=strconv.FormatUint(uint64(tokensToDeal), 10)
+	// var fullName = firstName + " " + lastName
+	bookings = append(bookings, userData)
+	// return bookings, RemainingTokens
+	// fmt.Printf("Réservations: %v", bookings)
 }
