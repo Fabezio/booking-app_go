@@ -3,15 +3,15 @@ package main
 import (
 	"booking-app/helper"
 	"fmt"
-	"strconv"
-	// "strings"
+	"sync"
+	"time"
 	// "bufio"
 )
 
 const conferenceName string = "Go Conference"
 const conferenceTokens uint = 50
 var RemainingTokens = conferenceTokens
-var bookings = make([]map[string]string, 0)
+var bookings = make([]UserData, 0)
 
 type UserData struct {
 	firstName string
@@ -21,16 +21,20 @@ type UserData struct {
 	// isUserOpted bool
 }
 
+var wg = sync.WaitGroup{}
+
 func main () {
 
 	greetUsers()
 
-	for {
+	// for {
 		firstName, lastName, email, tokensToDeal := getUserInput()
 
 		isValidName, isValidEmail, isValidTokenNumber := helper.ValidateUserInput( firstName, lastName, email, tokensToDeal, RemainingTokens) 
 		if isValidEmail && isValidName && isValidTokenNumber {
 			bookToken( firstName , lastName, email, tokensToDeal)
+			wg.Add(1)
+			go sendToken(tokensToDeal, firstName, lastName, email)
 
 			fmt.Printf("Merci, %v. Vous serez notifié sous peu par courriel à l'adresse %v. Passez une excellente journée.\n", firstName, email)
 			fmt.Println("----------")
@@ -40,7 +44,7 @@ func main () {
 
 			if RemainingTokens == 0 {
 				fmt.Println("Jetons épuisés. Nous espérons vous voir lors de la prochaine conférence.")
-				break
+				// break
 			}
 			} else {
 				fmt.Println("/!\\")
@@ -59,7 +63,8 @@ func main () {
 			// fmt.Println("Euh... Y'a un problème, là!")
 			// fmt.Println("----------")
 			// continue
-		}
+		// }
+		wg.Wait()
 	} 
 
 
@@ -76,13 +81,11 @@ func printFirstNames() []string {
 		firstNames := []string{}
 			for _, booking := range bookings {
 				// names := strings.Fields(booking)
-				firstNames = append(firstNames, booking["firstName"])
+				firstNames = append(firstNames, booking.firstName)
 			}
 			return firstNames
 			
 }
-
-
 
 func getUserInput() (string, string, string, uint) {
 	var firstName string
@@ -113,14 +116,25 @@ func bookToken(firstName string, lastName string, email string, tokensToDeal uin
 	RemainingTokens = RemainingTokens - tokensToDeal
 	// var mySlice [string]
 	// var myMap = map[string]string
-	var userData = make(map[string]string)
-	userData["firstName"]=firstName
-	userData["lastName"]=lastName
-	userData["email"]=email
-	userData["firstName"]=firstName
-	userData["tokensToDeal"]=strconv.FormatUint(uint64(tokensToDeal), 10)
+	var userData = UserData {
+		firstName:firstName,
+		lastName:lastName,
+		email:email,
+		numberOfTokens: tokensToDeal,
+
+	}
 	// var fullName = firstName + " " + lastName
 	bookings = append(bookings, userData)
 	// return bookings, RemainingTokens
 	// fmt.Printf("Réservations: %v", bookings)
+}
+
+func sendToken(tokensToDeal uint, firstName, lastName string, email string) {
+	time.Sleep(10 * time.Second)
+	var token = fmt.Sprintf("%v jetons pour %v %v.\n", tokensToDeal, firstName, lastName)
+	fmt.Println("##########")
+	fmt.Printf("Envoi de jetons: %v \nà l'adresse suivante: %v \n", token, email)
+	fmt.Println("##########")
+	// fmt.Println("_________")
+	wg.Done()
 }
