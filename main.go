@@ -12,7 +12,7 @@ const conferenceName string = "Go Conference"
 const conferenceTokens uint = 50
 var RemainingTokens = conferenceTokens
 var bookings = make([]UserData, 0)
-
+var turn int = 1
 type UserData struct {
 	firstName string
 	lastName string
@@ -27,13 +27,15 @@ func main () {
 
 	greetUsers()
 
-	// for {
+	for {
+		fmt.Printf("entrée: %v\n", turn)
 		firstName, lastName, email, tokensToDeal := getUserInput()
 
 		isValidName, isValidEmail, isValidTokenNumber := helper.ValidateUserInput( firstName, lastName, email, tokensToDeal, RemainingTokens) 
 		if isValidEmail && isValidName && isValidTokenNumber {
 			bookToken( firstName , lastName, email, tokensToDeal)
 			wg.Add(1)
+			// turn ++
 			go sendToken(tokensToDeal, firstName, lastName, email)
 
 			fmt.Printf("Merci, %v. Vous serez notifié sous peu par courriel à l'adresse %v. Passez une excellente journée.\n", firstName, email)
@@ -44,7 +46,7 @@ func main () {
 
 			if RemainingTokens == 0 {
 				fmt.Println("Jetons épuisés. Nous espérons vous voir lors de la prochaine conférence.")
-				// break
+				break
 			}
 			} else {
 				fmt.Println("/!\\")
@@ -63,9 +65,11 @@ func main () {
 			// fmt.Println("Euh... Y'a un problème, là!")
 			// fmt.Println("----------")
 			// continue
-		// }
+		}
+		turn++
+		} 
+		// fmt.Printf("entrée: %v\n", turn)
 		wg.Wait()
-	} 
 
 
 	fmt.Printf("Participants: %v\n", bookings)
@@ -136,5 +140,6 @@ func sendToken(tokensToDeal uint, firstName, lastName string, email string) {
 	fmt.Printf("Envoi de jetons: %v \nà l'adresse suivante: %v \n", token, email)
 	fmt.Println("##########")
 	// fmt.Println("_________")
+	// turn ++
 	wg.Done()
 }
